@@ -1,0 +1,71 @@
+import java.util.*;
+
+class ProcessSJF {
+    int id, at, bt, ct, tat, wt;
+    boolean completed = false;
+}
+
+public class SJFNonPreemptive {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        System.out.print("Enter number of processes: ");
+        int n = sc.nextInt();
+        ProcessSJF[] p = new ProcessSJF[n];
+
+        for (int i = 0; i < n; i++) {
+            p[i] = new ProcessSJF();
+            p[i].id = i + 1;
+            System.out.print("Arrival Time of P" + p[i].id + ": ");
+            p[i].at = sc.nextInt();
+            System.out.print("Burst Time of P" + p[i].id + ": ");
+            p[i].bt = sc.nextInt();
+        }
+
+        int completed = 0, time = 0;
+        double totalTAT = 0, totalWT = 0;
+
+        while (completed < n) {
+            ProcessSJF curr = null;
+            int minBT = Integer.MAX_VALUE;
+
+            // Select process with minimum burst time among ready processes
+            for (ProcessSJF pr : p) {
+                if (!pr.completed && pr.at <= time && pr.bt < minBT) {
+                    minBT = pr.bt;
+                    curr = pr;
+                }
+            }
+
+            if (curr == null) {
+                // If no process has arrived yet
+                time++;
+                continue;
+            }
+
+            // Once selected, run completely (non-preemptive)
+            time += curr.bt;
+            curr.ct = time;
+            curr.tat = curr.ct - curr.at;
+            curr.wt = curr.tat - curr.bt;
+            curr.completed = true;
+            completed++;
+
+            totalTAT += curr.tat;
+            totalWT += curr.wt;
+        }
+
+        // Display results
+        System.out.println("\n--- SJF (Non-Preemptive) ---");
+        System.out.println("PID\tAT\tBT\tCT\tTAT\tWT");
+        Arrays.sort(p, Comparator.comparingInt(x -> x.id));
+        for (ProcessSJF pr : p) {
+            System.out.println(pr.id + "\t" + pr.at + "\t" + pr.bt + "\t" + pr.ct + "\t" + pr.tat + "\t" + pr.wt);
+        }
+
+        System.out.printf("Average TAT: %.2f\n", totalTAT / n);
+        System.out.printf("Average WT: %.2f\n", totalWT / n);
+
+        sc.close();
+    }
+}
