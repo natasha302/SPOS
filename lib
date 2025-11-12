@@ -1,0 +1,47 @@
+1. main.cpp
+
+#include <iostream> 
+#include "MathLibrary.h" 
+using namespace std; 
+int main() { 
+cout << "Add: " << add(4, 3) << endl; 
+cout << "Subtract: " << subtract(4, 3) << endl; 
+cout<<"Multiplication: "<< multiply(12,10)<<endl; 
+cout<<"Division: "<<division(12,4)<<endl; 
+cout<<"Square: "<<square(6)<<endl; 
+return 0; 
+} 
+
+2.MathLibrary.cpp
+
+#include "MathLibrary.h" 
+int add(int a, int b) { 
+return a + b; 
+} 
+int subtract(int a, int b) { 
+return a - b; 
+} 
+int multiply(int a, int b){ 
+return a*b; 
+} 
+int division(int a,int b){ 
+return a/b; 
+} 
+int square(int a){ 
+return a*a; 
+}
+
+3.MathLibrary.h
+
+#pragma once 
+#ifdef __cplusplus 
+extern "C" { 
+#endif 
+int add(int a, int b); 
+int subtract(int a, int b); 
+int multiply(int a,int b); 
+int division(int a,int b); 
+int square(int a); 
+#ifdef __cplusplus 
+} 
+#endif 
