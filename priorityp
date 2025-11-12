@@ -1,0 +1,97 @@
+import java.util.*;
+
+class ProcessP {
+    int id, at, bt, ct, tat, wt, priority;
+    int remaining;
+    boolean completed = false;
+}
+
+public class PriorityPreemptive {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Enter number of processes: ");
+        int n = sc.nextInt();
+        ProcessP[] p = new ProcessP[n];
+
+        for (int i = 0; i < n; i++) {
+            p[i] = new ProcessP();
+            p[i].id = i + 1;
+            System.out.print("Arrival Time P" + p[i].id + ": ");
+            p[i].at = sc.nextInt();
+            System.out.print("Burst Time P" + p[i].id + ": ");
+            p[i].bt = sc.nextInt();
+            p[i].remaining = p[i].bt;
+            System.out.print("Priority P" + p[i].id + " (lower number = higher priority): ");
+            p[i].priority = sc.nextInt();
+        }
+
+        int completed = 0, time = 0;
+        double totalTAT = 0, totalWT = 0;
+
+        while (completed < n) {
+            ProcessP curr = null;
+            int currIdx = -1;
+
+            // choose the ready process with highest priority (lowest number)
+            // tie-breaker: smaller remaining, then earlier arrival, then lower id
+            for (int i = 0; i < n; i++) {
+                if (!p[i].completed && p[i].at <= time && p[i].remaining > 0) {
+                    if (curr == null) {
+                        curr = p[i];
+                        currIdx = i;
+                    } else {
+                        if (p[i].priority < curr.priority) {
+                            curr = p[i]; currIdx = i;
+                        } else if (p[i].priority == curr.priority) {
+                            if (p[i].remaining < curr.remaining) {
+                                curr = p[i]; currIdx = i;
+                            } else if (p[i].remaining == curr.remaining) {
+                                if (p[i].at < curr.at) {
+                                    curr = p[i]; currIdx = i;
+                                } else if (p[i].at == curr.at) {
+                                    if (p[i].id < curr.id) {
+                                        curr = p[i]; currIdx = i;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (curr == null) {
+                // no process is ready at this time
+                time++;
+                continue;
+            }
+
+            // Execute for 1 time unit (preemptive)
+            curr.remaining--;
+            time++;
+
+            // If process finished, set completion metrics
+            if (curr.remaining == 0) {
+                curr.completed = true;
+                curr.ct = time;
+                curr.tat = curr.ct - curr.at;
+                curr.wt = curr.tat - curr.bt;
+                totalTAT += curr.tat;
+                totalWT += curr.wt;
+                completed++;
+            }
+        }
+
+        // display results
+        System.out.println("\n--- Priority (Preemptive) ---");
+        System.out.println("PID\tAT\tBT\tPR\tCT\tTAT\tWT");
+        Arrays.sort(p, Comparator.comparingInt(x -> x.id));
+        for (ProcessP pr : p) {
+            System.out.println(pr.id + "\t" + pr.at + "\t" + pr.bt + "\t" + pr.priority + "\t" + pr.ct + "\t" + pr.tat + "\t" + pr.wt);
+        }
+
+        System.out.printf("Average TAT: %.2f\n", totalTAT / n);
+        System.out.printf("Average WT: %.2f\n", totalWT / n);
+
+        sc.close();
+    }
+}
