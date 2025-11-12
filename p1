@@ -1,0 +1,176 @@
+1.SymTab.java
+ import java.io.*; 
+public class SymTab { 
+public static void main(String[] args) throws Exception { 
+BufferedReader br = new BufferedReader(new FileReader(args[0])); 
+f
+ inal int MAX = 100; 
+String[][] symTab = new String[MAX][3]; 
+String[][] opTab = new String[MAX][3]; 
+String[][] litTab = new String[MAX][2]; 
+int[] poolTab = new int[MAX]; 
+int LC = 0, symIdx = 0, opIdx = 0, litIdx = 0, poolIdx = 0, lineNo = 0; 
+String line; 
+System.out.println("________________________________"); 
+while ((line = br.readLine()) != null) { 
+String[] tok = line.split("\t"); 
+for (String t : tok) System.out.print(t + "\t"); 
+System.out.println(); 
+if (lineNo++ == 0 && tok.length >= 3) { 
+LC = Integer.parseInt(tok[2]); 
+continue; 
+} 
+if (!tok[0].isEmpty()) {  // Label 
+symTab[symIdx][0] = tok[0]; 
+symTab[symIdx][1] = String.valueOf(LC); 
+symTab[symIdx++][2] = "1"; 
+} 
+if ((tok[1].equalsIgnoreCase("DS") || tok[1].equalsIgnoreCase("DC")) && 
+tok[0].isEmpty()) { 
+symTab[symIdx][0] = tok[0]; 
+symTab[symIdx][1] = String.valueOf(LC); 
+symTab[symIdx++][2] = "1"; 
+} 
+if (tok.length >= 3 && tok[2].startsWith("=")) { 
+litTab[litIdx][0] = tok[2]; 
+litTab[litIdx++][1] = String.valueOf(LC); 
+} 
+if (tok[1] != null) { 
+opTab[opIdx][0] = tok[1]; 
+if (tok[1].matches("START|END|ORIGIN|EQU|LTORG")) { 
+opTab[opIdx][1] = "AD"; 
+opTab[opIdx][2] = "R11"; 
+} else if (tok[1].matches("DS|DC")) { 
+opTab[opIdx][1] = "DL"; 
+opTab[opIdx][2] = "R7"; 
+} else { 
+opTab[opIdx][1] = "IS"; 
+opTab[opIdx][2] = "(04,1)"; 
+} 
+opIdx++; 
+} 
+LC++; 
+} 
+System.out.println("________________________________"); 
+  
+// SYMBOL TABLE 
+System.out.println("\nSYMBOL TABLE\n--------------------------"); 
+System.out.println("SYMBOL\tADDRESS\tLENGTH\n--------------------------"); 
+for (int i = 0; i < symIdx; i++) 
+System.out.println(symTab[i][0] + "\t" + symTab[i][1] + "\t" + symTab[i][2]); 
+
+  // OPCODE TABLE 
+System.out.println("\nOPCODE TABLE\n----------------------------"); 
+System.out.println("MNEMONIC\tCLASS\tINFO\n----------------------------"); 
+for (int i = 0; i < opIdx; i++) 
+System.out.println(opTab[i][0] + "\t\t" + opTab[i][1] + "\t" + opTab[i][2]); 
+
+  // LITERAL TABLE 
+System.out.println("\nLITERAL TABLE\n-----------------"); 
+System.out.println("LITERAL\tADDRESS\n-----------------"); 
+for (int i = 0; i < litIdx; i++) 
+System.out.println(litTab[i][0] + "\t" + litTab[i][1]); 
+
+  // POOL TABLE 
+System.out.println("\nPOOL TABLE\n-----------------"); 
+System.out.println("LITERAL NUMBER\n-----------------"); 
+for (int i = 0; i < litIdx - 1; i++) { 
+int curr = Integer.parseInt(litTab[i][1]); 
+int next = Integer.parseInt(litTab[i + 1][1]); 
+if (i == 0 || curr < next - 1) poolTab[poolIdx++] = i + 1; 
+} 
+for (int i = 0; i < poolIdx; i++) System.out.println(poolTab[i]); 
+System.out.println("------------------"); 
+br.close(); 
+} 
+} 
+
+
+2.input.txt
+ START 100 
+READ A 
+LABLE MOVER 
+LTORG 
+='5' 
+='1' 
+='6' 
+='7' 
+MOVEM 
+LTORG 
+='2' 
+LOOP READ B 
+A 
+B 
+DS 
+DC 
+END 
+Output: 
+1 
+'1' 
+='1' 
+A,B 
+A,B 
+gescoe@gescoe-OptiPlex-3010:~/TEB28$ javac SymTab.java 
+gescoe@gescoe-OptiPlex-3010:~/TEB28$ java SymTab 
+input.txt ________________________________ 
+ START 100  
+ READ A  
+LABLE MOVER A,B  
+ LTORG  
+  ='5'  
+  ='1'  
+  ='6'  
+  ='7'  
+ MOVEM A,B  
+ LTORG  
+  ='2'  
+LOOP READ B  
+A DS 1  
+B DC '1'  
+  ='1'  
+ END  
+________________________________ 
+ 
+SYMBOL TABLE -------------------------- 
+SYMBOL ADDRESS LENGTH -------------------------- 
+LABLE 101 1 
+LOOP 110 1 
+A 111 1 
+B 112 1 
+ 
+OPCODE TABLE ---------------------------- 
+MNEMONIC CLASS INFO ---------------------------- 
+READ  IS (04,1) 
+MOVER  IS (04,1) 
+LTORG  AD R11 
+  IS (04,1) 
+  IS (04,1) 
+  IS (04,1) 
+  IS (04,1) 
+MOVEM  IS (04,1) 
+LTORG  AD R11 
+  IS (04,1) 
+READ  IS (04,1) 
+DS  DL R7 
+DC  DL R7 
+  IS (04,1) 
+END  AD R11 
+ 
+LITERAL TABLE ----------------- 
+LITERAL ADDRESS ----------------- 
+='5' 103 
+='1' 
+104 
+='6' 
+='7' 
+='2' 
+='1' 
+105 
+106 
+109 
+113 
+POOL TABLE ----------------- 
+LITERAL NUMBER ----------------- 
+1 
+4 
+5 ------------------ 
