@@ -1,0 +1,85 @@
+import java.util.*;
+
+class ProcessRR {
+    int id, at, bt, remaining, ct, tat, wt;
+}
+
+public class RoundRobin {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Enter number of processes: ");
+        int n = sc.nextInt();
+        ProcessRR[] p = new ProcessRR[n];
+
+        for (int i = 0; i < n; i++) {
+            p[i] = new ProcessRR();
+            p[i].id = i + 1;
+            System.out.print("Arrival Time P" + p[i].id + ": ");
+            p[i].at = sc.nextInt();
+            System.out.print("Burst Time P" + p[i].id + ": ");
+            p[i].bt = p[i].remaining = sc.nextInt();
+        }
+
+        System.out.print("Enter Time Quantum: ");
+        int tq = sc.nextInt();
+
+        // Sort by arrival time to enqueue in order
+        Arrays.sort(p, Comparator.comparingInt(a -> a.at));
+
+        Queue<ProcessRR> q = new LinkedList<>();
+        int time = 0, completed = 0, index = 0;
+
+        // enqueue processes that arrive at time 0 (or earliest)
+        while (index < n && p[index].at <= time) q.add(p[index++]);
+        if (q.isEmpty() && index < n) {
+            time = p[index].at;
+            q.add(p[index++]);
+        }
+
+        while (!q.isEmpty()) {
+            ProcessRR curr = q.poll();
+            if (curr.remaining > tq) {
+                // execute for time quantum
+                time += tq;
+                curr.remaining -= tq;
+            } else {
+                // finish process
+                time += curr.remaining;
+                curr.remaining = 0;
+                curr.ct = time;
+                curr.tat = curr.ct - curr.at;
+                curr.wt = curr.tat - curr.bt;
+                completed++;
+            }
+
+            // enqueue new arrivals that came while we were executing
+            while (index < n && p[index].at <= time) q.add(p[index++]);
+
+            // if current still has remaining burst, put it back
+            if (curr.remaining > 0) q.add(curr);
+
+            // if queue got empty but some processes not arrived yet, jump time
+            if (q.isEmpty() && completed < n && index < n && p[index].at > time) {
+                time = p[index].at;
+                q.add(p[index++]);
+            }
+        }
+
+        // restore original order by PID for display: sort by id
+        Arrays.sort(p, Comparator.comparingInt(x -> x.id));
+        display(p, "Round Robin (TQ=" + tq + ")");
+        sc.close();
+    }
+
+    static void display(ProcessRR[] p, String algo) {
+        System.out.println("\n--- " + algo + " ---");
+        System.out.println("PID\tAT\tBT\tCT\tTAT\tWT");
+        double avgTAT = 0, avgWT = 0;
+        for (ProcessRR pr : p) {
+            System.out.println(pr.id + "\t" + pr.at + "\t" + pr.bt + "\t" + pr.ct + "\t" + pr.tat + "\t" + pr.wt);
+            avgTAT += pr.tat; avgWT += pr.wt;
+        }
+        System.out.printf("Average TAT: %.2f\n", avgTAT / p.length);
+        System.out.printf("Average WT: %.2f\n", avgWT / p.length);
+    }
+}
