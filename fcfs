@@ -1,0 +1,50 @@
+import java.util.*;
+
+class Process {
+    int id, at, bt, ct, tat, wt;
+}
+
+public class FCFS {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Enter number of processes: ");
+        int n = sc.nextInt();
+        Process[] p = new Process[n];
+
+        for (int i = 0; i < n; i++) {
+            p[i] = new Process();
+            p[i].id = i + 1;
+            System.out.print("Arrival Time P" + p[i].id + ": ");
+            p[i].at = sc.nextInt();
+            System.out.print("Burst Time P" + p[i].id + ": ");
+            p[i].bt = sc.nextInt();
+        }
+
+        // Sort by arrival time
+        Arrays.sort(p, Comparator.comparingInt(a -> a.at));
+
+        int time = 0;
+        for (Process pr : p) {
+            // If CPU is idle until this process arrives, jump time to arrival
+            time = Math.max(time, pr.at) + pr.bt;
+            pr.ct = time;
+            pr.tat = pr.ct - pr.at;
+            pr.wt = pr.tat - pr.bt;
+        }
+
+        display(p, "FCFS");
+        sc.close();
+    }
+
+    static void display(Process[] p, String algo) {
+        System.out.println("\n--- " + algo + " ---");
+        System.out.println("PID\tAT\tBT\tCT\tTAT\tWT");
+        double avgTAT = 0, avgWT = 0;
+        for (Process pr : p) {
+            System.out.println(pr.id + "\t" + pr.at + "\t" + pr.bt + "\t" + pr.ct + "\t" + pr.tat + "\t" + pr.wt);
+            avgTAT += pr.tat; avgWT += pr.wt;
+        }
+        System.out.printf("Average TAT: %.2f\n", avgTAT / p.length);
+        System.out.printf("Average WT: %.2f\n", avgWT / p.length);
+    }
+}
