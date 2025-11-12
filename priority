@@ -1,0 +1,68 @@
+import java.util.*;
+
+class ProcessP {
+    int id, at, bt, ct, tat, wt, priority;
+}
+
+public class PriorityNonPreemptive {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Enter number of processes: ");
+        int n = sc.nextInt();
+        ProcessP[] p = new ProcessP[n];
+
+        for (int i = 0; i < n; i++) {
+            p[i] = new ProcessP();
+            p[i].id = i + 1;
+            System.out.print("Arrival Time P" + p[i].id + ": ");
+            p[i].at = sc.nextInt();
+            System.out.print("Burst Time P" + p[i].id + ": ");
+            p[i].bt = sc.nextInt();
+            System.out.print("Priority P" + p[i].id + " (lower number = higher priority): ");
+            p[i].priority = sc.nextInt();
+        }
+
+        boolean[] done = new boolean[n];
+        int completed = 0, time = 0;
+
+        while (completed < n) {
+            ProcessP curr = null;
+            int currIdx = -1;
+            for (int i = 0; i < n; i++) {
+                if (!done[i] && p[i].at <= time) {
+                    if (curr == null || p[i].priority < curr.priority) {
+                        curr = p[i];
+                        currIdx = i;
+                    }
+                }
+            }
+            if (curr == null) {
+                time++;
+                continue;
+            }
+            // execute curr fully (non-preemptive)
+            time += curr.bt;
+            curr.ct = time;
+            curr.tat = curr.ct - curr.at;
+            curr.wt = curr.tat - curr.bt;
+            done[currIdx] = true;
+            completed++;
+        }
+
+        display(p, "Priority (Non-Preemptive)");
+        sc.close();
+    }
+
+    static void display(ProcessP[] p, String algo) {
+        System.out.println("\n--- " + algo + " ---");
+        System.out.println("PID\tAT\tBT\tPR\tCT\tTAT\tWT");
+        double avgTAT = 0, avgWT = 0;
+        Arrays.sort(p, Comparator.comparingInt(x -> x.id));
+        for (ProcessP pr : p) {
+            System.out.println(pr.id + "\t" + pr.at + "\t" + pr.bt + "\t" + pr.priority + "\t" + pr.ct + "\t" + pr.tat + "\t" + pr.wt);
+            avgTAT += pr.tat; avgWT += pr.wt;
+        }
+        System.out.printf("Average TAT: %.2f\n", avgTAT / p.length);
+        System.out.printf("Average WT: %.2f\n", avgWT / p.length);
+    }
+}
