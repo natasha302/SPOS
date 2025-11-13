@@ -45,3 +45,8 @@ int square(int a);
 #ifdef __cplusplus 
 } 
 #endif 
+
+gescoe@gescoe-OptiPlex-3010:~/TEB28$ g++ -fPIC -c MathLibrary.cpp -o MathLibrary.o 
+gescoe@gescoe-OptiPlex-3010:~/TEB28$ g++ -shared -o libmath.so MathLibrary.o 
+gescoe@gescoe-OptiPlex-3010:~/TEB28$ g++ main.cpp -L. -lmath -o main 
+gescoe@gescoe-OptiPlex-3010:~/TEB28$ LD_LIBRARY_PATH=. ./main
